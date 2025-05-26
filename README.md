@@ -43,6 +43,9 @@ jukebox/
 ├── gen/
 │   ├── openapi/                       # Código gerado com oapi-codegen (tipos e handlers)
 │   └── sqlc/                          # Código gerado pelo SQLC a partir das queries
+├── sql/
+│   ├── queries/                       # Queries SQL utilizadas pelo SQLC
+│   ├── migrations/                    # Migrations controladas com DBMate
 ├── cmd/
 │   ├── app/                           # API HTTP (main.go)
 │   └── worker/                        # Worker que consome a fila e processa faixas
@@ -56,8 +59,6 @@ jukebox/
 │   └── resources/                     # Adapters (infraestrutura)
 │       ├── database/postgres/         # Integração com banco de dados via SQLC
 │       └── queue/aws/                 # Cliente SQS via AWS SDK / LocalStack
-├── sql/                               # Queries SQL utilizadas pelo SQLC
-├── migrations/                        # Migrations controladas com DBMate
 ├── Dockerfile
 ├── docker-compose.yml
 ├── dbmate.toml
@@ -80,7 +81,7 @@ dbmate up
 ```
 ## 4. Gerar código SQLC e API via OpenAPI
 ``` bash
-go generate ...
+go generate ./...
 ```
 ## 5. Rodar a API
 ``` bash

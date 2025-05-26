@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./tools/postgres/data/pgdata:/var/lib/postgresql/data/pgdata"
+      - "./tools/postgres/scripts:/docker-entrypoint-initdb.d"
+    environment:
+      - POSTGRES_USER=blabla
+      - POSTGRES_PASSWORD=blabla
+      - POSTGRES_DB=blabla
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+
+  localstack:
+    container_name: localstack
+    command: /bin/bash /docker-entrypoint-initaws.d/sqs-queue.sh
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "./.localstack:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
