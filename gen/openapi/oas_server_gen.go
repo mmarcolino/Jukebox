@@ -8,12 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// HealthGet implements GET /health operation.
+	// Ping implements Ping operation.
 	//
-	// Health check.
+	// Gets a pong.
 	//
-	// GET /health
-	HealthGet(ctx context.Context) (HealthGetOK, error)
+	// GET /ping
+	Ping(ctx context.Context) (string, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

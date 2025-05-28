@@ -16,6 +16,7 @@ import (
 
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
+	"github.com/ogen-go/ogen/otelogen"
 )
 
 type codeRecorder struct {
@@ -28,21 +29,22 @@ func (c *codeRecorder) WriteHeader(status int) {
 	c.ResponseWriter.WriteHeader(status)
 }
 
-// handleHealthGetRequest handles GET /health operation.
+// handlePingRequest handles Ping operation.
 //
-// Health check.
+// Gets a pong.
 //
-// GET /health
-func (s *Server) handleHealthGetRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+// GET /ping
+func (s *Server) handlePingRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("Ping"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/health"),
+		semconv.HTTPRouteKey.String("/ping"),
 	}
 
 	// Start a span for this request.
-	ctx, span := s.cfg.Tracer.Start(r.Context(), HealthGetOperation,
+	ctx, span := s.cfg.Tracer.Start(r.Context(), PingOperation,
 		trace.WithAttributes(otelAttrs...),
 		serverSpanKind,
 	)
@@ -98,13 +100,13 @@ func (s *Server) handleHealthGetRequest(args [0]string, argsEscaped bool, w http
 		err error
 	)
 
-	var response HealthGetOK
+	var response string
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
 			Context:          ctx,
-			OperationName:    HealthGetOperation,
-			OperationSummary: "Health check",
-			OperationID:      "",
+			OperationName:    PingOperation,
+			OperationSummary: "Gets a pong",
+			OperationID:      "Ping",
 			Body:             nil,
 			Params:           middleware.Parameters{},
 			Raw:              r,
@@ -113,7 +115,7 @@ func (s *Server) handleHealthGetRequest(args [0]string, argsEscaped bool, w http
 		type (
 			Request  = struct{}
 			Params   = struct{}
-			Response = HealthGetOK
+			Response = string
 		)
 		response, err = middleware.HookMiddleware[
 			Request,
@@ -124,12 +126,12 @@ func (s *Server) handleHealthGetRequest(args [0]string, argsEscaped bool, w http
 			mreq,
 			nil,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.HealthGet(ctx)
+				response, err = s.h.Ping(ctx)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.HealthGet(ctx)
+		response, err = s.h.Ping(ctx)
 	}
 	if err != nil {
 		defer recordError("Internal", err)
@@ -137,7 +139,7 @@ func (s *Server) handleHealthGetRequest(args [0]string, argsEscaped bool, w http
 		return
 	}
 
-	if err := encodeHealthGetResponse(response, w, span); err != nil {
+	if err := encodePingResponse(response, w, span); err != nil {
 		defer recordError("EncodeResponse", err)
 		if !errors.Is(err, ht.ErrInternalServerErrorResponse) {
 			s.cfg.ErrorHandler(ctx, w, r, err)

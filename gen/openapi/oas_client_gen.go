@@ -16,6 +16,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	ht "github.com/ogen-go/ogen/http"
+	"github.com/ogen-go/ogen/otelogen"
 	"github.com/ogen-go/ogen/uri"
 )
 
@@ -26,12 +27,12 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// HealthGet invokes GET /health operation.
+	// Ping invokes Ping operation.
 	//
-	// Health check.
+	// Gets a pong.
 	//
-	// GET /health
-	HealthGet(ctx context.Context) (HealthGetOK, error)
+	// GET /ping
+	Ping(ctx context.Context) (string, error)
 }
 
 // Client implements OAS client.
@@ -77,20 +78,21 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// HealthGet invokes GET /health operation.
+// Ping invokes Ping operation.
 //
-// Health check.
+// Gets a pong.
 //
-// GET /health
-func (c *Client) HealthGet(ctx context.Context) (HealthGetOK, error) {
-	res, err := c.sendHealthGet(ctx)
+// GET /ping
+func (c *Client) Ping(ctx context.Context) (string, error) {
+	res, err := c.sendPing(ctx)
 	return res, err
 }
 
-func (c *Client) sendHealthGet(ctx context.Context) (res HealthGetOK, err error) {
+func (c *Client) sendPing(ctx context.Context) (res string, err error) {
 	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("Ping"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/health"),
+		semconv.HTTPRouteKey.String("/ping"),
 	}
 
 	// Run stopwatch.
@@ -105,7 +107,7 @@ func (c *Client) sendHealthGet(ctx context.Context) (res HealthGetOK, err error)
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, HealthGetOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, PingOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -123,7 +125,7 @@ func (c *Client) sendHealthGet(ctx context.Context) (res HealthGetOK, err error)
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
 	var pathParts [1]string
-	pathParts[0] = "/health"
+	pathParts[0] = "/ping"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
@@ -140,7 +142,7 @@ func (c *Client) sendHealthGet(ctx context.Context) (res HealthGetOK, err error)
 	defer resp.Body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeHealthGetResponse(resp)
+	result, err := decodePingResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

@@ -48,9 +48,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/health"
+		case '/': // Prefix: "/ping"
 
-			if l := len("/health"); len(elem) >= l && elem[0:l] == "/health" {
+			if l := len("/ping"); len(elem) >= l && elem[0:l] == "/ping" {
 				elem = elem[l:]
 			} else {
 				break
@@ -60,7 +60,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				// Leaf node.
 				switch r.Method {
 				case "GET":
-					s.handleHealthGetRequest([0]string{}, elemIsEscaped, w, r)
+					s.handlePingRequest([0]string{}, elemIsEscaped, w, r)
 				default:
 					s.notAllowed(w, r, "GET")
 				}
@@ -148,9 +148,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 			break
 		}
 		switch elem[0] {
-		case '/': // Prefix: "/health"
+		case '/': // Prefix: "/ping"
 
-			if l := len("/health"); len(elem) >= l && elem[0:l] == "/health" {
+			if l := len("/ping"); len(elem) >= l && elem[0:l] == "/ping" {
 				elem = elem[l:]
 			} else {
 				break
@@ -160,10 +160,10 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				// Leaf node.
 				switch method {
 				case "GET":
-					r.name = HealthGetOperation
-					r.summary = "Health check"
-					r.operationID = ""
-					r.pathPattern = "/health"
+					r.name = PingOperation
+					r.summary = "Gets a pong"
+					r.operationID = "Ping"
+					r.pathPattern = "/ping"
 					r.args = args
 					r.count = 0
 					return r, true

@@ -3,13 +3,15 @@ info:
   title: Jukebox API
   version: 1.0.0
 paths:
-  /health:
+  /ping:
     get:
-      summary: Health check
+      summary: Gets a pong
+      operationId: Ping
       responses:
         '200':
-          description: API is up
+          description: Pong string
           content:
-            text/plain:
+            application/json:              
               schema:
                 type: string
+                format: simple

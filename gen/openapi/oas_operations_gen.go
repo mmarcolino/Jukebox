@@ -6,5 +6,5 @@ package openapi
 type OperationName = string
 
 const (
-	HealthGetOperation OperationName = "HealthGet"
+	PingOperation OperationName = "Ping"
 )

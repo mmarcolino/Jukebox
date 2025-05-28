@@ -13,11 +13,11 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// HealthGet implements GET /health operation.
+// Ping implements Ping operation.
 //
-// Health check.
+// Gets a pong.
 //
-// GET /health
-func (UnimplementedHandler) HealthGet(ctx context.Context) (r HealthGetOK, _ error) {
+// GET /ping
+func (UnimplementedHandler) Ping(ctx context.Context) (r string, _ error) {
 	return r, ht.ErrNotImplemented
 }
