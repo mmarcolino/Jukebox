@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// GetTracks implements GetTracks operation.
+//
+// Gets the registred songs.
+//
+// GET /tracks
+func (UnimplementedHandler) GetTracks(ctx context.Context) (r []Track, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // Ping implements Ping operation.
 //
 // Gets a pong.

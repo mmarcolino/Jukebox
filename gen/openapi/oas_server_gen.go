@@ -8,6 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// GetTracks implements GetTracks operation.
+	//
+	// Gets the registred songs.
+	//
+	// GET /tracks
+	GetTracks(ctx context.Context) ([]Track, error)
 	// Ping implements Ping operation.
 	//
 	// Gets a pong.
