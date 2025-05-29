@@ -15,3 +15,37 @@ paths:
               schema:
                 type: string
                 format: simple
+  /tracks:
+    get:
+      summary: Gets the registred songs
+      operationId: GetTracks
+      responses:
+        '200':
+          description: Get tracks success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: "#/components/schemas/Track"
+
+components:
+  schemas:
+    Track:
+      description: Track response object
+      type: object
+      required: 
+        - artist
+        - title
+        - duration
+      properties:
+        title: 
+          type: string
+        artist:
+          type: string
+        duration:
+          type: integer
+        album:
+          type: string
+        genre:
+          type: string

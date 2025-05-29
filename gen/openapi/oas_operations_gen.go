@@ -6,5 +6,6 @@ package openapi
 type OperationName = string
 
 const (
-	PingOperation OperationName = "Ping"
+	GetTracksOperation OperationName = "GetTracks"
+	PingOperation      OperationName = "Ping"
 )
