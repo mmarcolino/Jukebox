@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE blabla.tracks(
+CREATE TABLE public.tracks(
     id VARCHAR (26) PRIMARY KEY,
     title VARCHAR (128) NOT NULL,
     artist VARCHAR (128) NOT NULL,
@@ -9,4 +9,4 @@ CREATE TABLE blabla.tracks(
 );
 
 -- migrate:down
-DROP TABLE blabla.tracks;
+DROP TABLE public.tracks;
