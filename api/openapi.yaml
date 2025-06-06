@@ -28,6 +28,16 @@ paths:
                 type: array
                 items: 
                   $ref: "#/components/schemas/Track"
+    post:
+      summary: Add a new track
+      operationId: PostTracks
+      requestBody: 
+        $ref: "#/components/requestBodies/TrackInput"
+      responses:
+        '200':
+          description: OK
+        '201':
+          description: Created
 
 components:
   schemas:
@@ -49,3 +59,26 @@ components:
           type: string
         genre:
           type: string
+  requestBodies:
+    TrackInput:
+      description: A JSON object containing the new track information
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - artist
+              - title
+              - duration
+            properties:
+              title: 
+                type: string
+              artist:
+                type: string
+              duration:
+                type: integer
+              album:
+                type: string
+              genre:
+                type: string
