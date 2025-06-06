@@ -1,0 +1,13 @@
+# mockery.yaml
+# Configura o mockery para gerar mocks com base em todas as interfaces encontradas no projeto
+
+resolve-type-alias: false
+with-expecter: true
+
+dir: ./mocks       # Caminho onde os mocks serão gerados
+outpkg: mocks               # Nome do pacote gerado
+packages:
+  ../internal:
+    config:
+      recursive: true
+      all: true
