@@ -3,8 +3,10 @@ package postgres
 import (
 	"context"
 
+	"github.com/marcolino/jukebox/gen/sqlc"
 	"github.com/marcolino/jukebox/internal/domain/entity"
 	"github.com/marcolino/jukebox/internal/utils"
+	"github.com/oklog/ulid/v2"
 )
 
 func (h *PostgresHandler) GetTracks(ctx context.Context) ([]entity.Track, error) {
@@ -27,4 +29,15 @@ func (h *PostgresHandler) GetTracks(ctx context.Context) ([]entity.Track, error)
 	}
 
 	return tracks, nil
+}
+
+func (h *PostgresHandler) PostTrack(ctx context.Context, track entity.Track) error{
+	return h.queries.PostTracks(ctx, sqlc.PostTracksParams{
+		ID: ulid.Make().String(),
+		Title: track.Title,
+		Artist: track.Artist,
+		Duration: int32(track.Duration),
+		Album: utils.ToNullString(track.Album),
+		Genre: utils.ToNullString(track.Genre),
+	})
 }

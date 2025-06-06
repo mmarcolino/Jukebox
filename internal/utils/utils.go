@@ -13,10 +13,24 @@ func ToOptString(s string) openapi.OptString {
 	return openapi.NewOptString(s)
 }
 
+func FromOptString(o openapi.OptString) string{
+	if o.IsSet() {
+		return o.Value
+	}
+	return ""
+}
+
 func FromNullStr(ns sql.NullString) string {
 	if ns.Valid {
 		return ns.String
 	}
 
 	return ""
+}
+
+func ToNullString (s string) sql.NullString{
+	if s == ""{
+		return sql.NullString{}
+	}
+	return sql.NullString{Valid: true, String: s}
 }
