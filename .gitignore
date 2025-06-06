@@ -1,3 +1,13 @@
+# Arquivo de variáveis de ambiente
 .env
-tools/postgres
-gen/openapi
+
+# Diretório com scripts e dados do Postgres
+tools/postgres/
+
+# Código gerado pelo OpenAPI Generator
+gen/openapi/
+
+# Código gerado pelo SQLC
+gen/sqlc/
+
+test/mocks/
