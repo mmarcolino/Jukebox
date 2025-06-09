@@ -9,4 +9,5 @@ import (
 type Tracks interface {
 	GetTracks(context.Context) ([]entity.Track, error)
 	PostTrack(context.Context, entity.Track) error
+	DeleteTrack(context.Context, entity.Track) error
 }
