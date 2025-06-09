@@ -31,13 +31,13 @@ func (h *PostgresHandler) GetTracks(ctx context.Context) ([]entity.Track, error)
 	return tracks, nil
 }
 
-func (h *PostgresHandler) PostTrack(ctx context.Context, track entity.Track) error{
+func (h *PostgresHandler) PostTrack(ctx context.Context, track entity.Track) error {
 	return h.queries.PostTracks(ctx, sqlc.PostTracksParams{
-		ID: ulid.Make().String(),
-		Title: track.Title,
-		Artist: track.Artist,
+		ID:       ulid.Make().String(),
+		Title:    track.Title,
+		Artist:   track.Artist,
 		Duration: int32(track.Duration),
-		Album: utils.ToNullString(track.Album),
-		Genre: utils.ToNullString(track.Genre),
+		Album:    utils.ToNullString(track.Album),
+		Genre:    utils.ToNullString(track.Genre),
 	})
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func (h *Handler) GetTracks(ctx context.Context) ([]openapi.Track, error) {
-	tracks, err := h.moduleHandler.GetTracks(ctx)
+	tracks, err := h.tracksHandler.GetTracks(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -28,16 +28,16 @@ func (h *Handler) GetTracks(ctx context.Context) ([]openapi.Track, error) {
 	return responseTracks, nil
 }
 
-func (h *Handler) PostTracks(ctx context.Context, req *openapi.PostTracksReq) (openapi.PostTracksRes, error){
+func (h *Handler) PostTracks(ctx context.Context, req *openapi.PostTracksReq) (openapi.PostTracksRes, error) {
 	track := entity.Track{
-		Title: req.Title,
-		Artist: req.Artist,
-		Album: utils.FromOptString(req.Album),
-		Genre: utils.FromOptString(req.Genre),
+		Title:    req.Title,
+		Artist:   req.Artist,
+		Album:    utils.FromOptString(req.Album),
+		Genre:    utils.FromOptString(req.Genre),
 		Duration: req.Duration,
 	}
-	err := h.moduleHandler.PostTrack(ctx, track)
-	if err != nil{
+	err := h.tracksHandler.PostTrack(ctx, track)
+	if err != nil {
 		return nil, err
 	}
 	return &openapi.PostTracksCreated{}, nil
