@@ -23,6 +23,7 @@ func (h *Handler) GetTracks(ctx context.Context) ([]openapi.Track, error) {
 			Album:    utils.ToOptString(track.Album),
 			Genre:    utils.ToOptString(track.Genre),
 			Duration: track.Duration,
+			ID: track.ID,
 		}
 	}
 	return responseTracks, nil
@@ -41,4 +42,8 @@ func (h *Handler) PostTracks(ctx context.Context, req *openapi.PostTracksReq) (o
 		return nil, err
 	}
 	return &openapi.PostTracksCreated{}, nil
+}
+
+func (h *Handler) DeleteTrack(ctx context.Context, params openapi.DeleteTrackParams) error{
+	return h.tracksHandler.DeleteTrack(ctx, entity.Track{ID: params.ID})
 }
