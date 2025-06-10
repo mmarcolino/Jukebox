@@ -38,7 +38,20 @@ paths:
           description: OK
         '201':
           description: Created
-
+  /tracks/{id}:
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: string
+            required: true
+            description: Track Ulid ID
+      delete:
+        summary: Delete track with specific ID
+        operationId: DeleteTrack
+        responses:
+            '204': 
+              description: No Content
 components:
   schemas:
     Track:
@@ -48,7 +61,10 @@ components:
         - artist
         - title
         - duration
+        - id
       properties:
+        id:
+          type: string
         title: 
           type: string
         artist:

@@ -86,3 +86,42 @@ func TestPostTrack(t *testing.T) {
 	assert.NoError(t, err)
 
 }
+
+func TestDeleteTrack (t *testing.T) {
+	ctx := context.Background()
+
+	columns := []string{"id", "title", "artist", "album", "duration", "genre"}
+
+	rowsData := [][]driver.Value{
+		{
+			"01JX3872K622GTRCCVXHXVP8ZY", "Next Semester", "Twenty One Pilots", "Clancy", int32(249), "Rock",
+		},
+	}
+
+	mock, db := test.NewMockDB(t)
+
+	expectedRows := sqlmock.NewRows(columns)
+
+	for _, row := range rowsData {
+		expectedRows.AddRow(row...)
+	}
+
+	data := entity.Track{
+		ID:       "01JX3872K622GTRCCVXHXVP8ZY",
+		Title:    "Next Semester",
+		Artist:   "Twenty One Pilots",
+		Album:    "Clancy",
+		Genre:    "Rock",
+		Duration: 249,
+	}
+
+	mock.ExpectExec("^-- name: DeleteTrack :exec DELETE FROM public.tracks*").
+		WithArgs(data.ID).
+		WillReturnResult(driver.ResultNoRows)
+	
+	postgresHandler := postgres.New(db)
+
+	err := postgresHandler.DeleteTrack(ctx, data)
+	assert.NoError(t, err)
+
+}

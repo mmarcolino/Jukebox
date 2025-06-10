@@ -41,3 +41,7 @@ func (h *PostgresHandler) PostTrack(ctx context.Context, track entity.Track) err
 		Genre:    utils.ToNullString(track.Genre),
 	})
 }
+
+func (h *PostgresHandler) DeleteTrack(ctx context.Context, track entity.Track) error{
+	return h.queries.DeleteTrack(ctx, track.ID)
+}
