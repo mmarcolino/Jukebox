@@ -8,13 +8,13 @@ import (
 	"github.com/marcolino/jukebox/internal/utils"
 )
 
-func (h *Handler) GetTracks(ctx context.Context) ([]openapi.Track, error) {
+func (h *Handler) GetTracks(ctx context.Context) (openapi.GetTracksRes, error) {
 	tracks, err := h.tracksHandler.GetTracks(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var responseTracks []openapi.Track = make([]openapi.Track, len(tracks))
+	var responseTracks openapi.GetTracksOKApplicationJSON = make([]openapi.Track, len(tracks))
 
 	for i, track := range tracks {
 		responseTracks[i] = openapi.Track{
@@ -23,10 +23,11 @@ func (h *Handler) GetTracks(ctx context.Context) ([]openapi.Track, error) {
 			Album:    utils.ToOptString(track.Album),
 			Genre:    utils.ToOptString(track.Genre),
 			Duration: track.Duration,
-			ID: track.ID,
+			ID:       track.ID,
 		}
 	}
-	return responseTracks, nil
+
+	return &responseTracks, nil
 }
 
 func (h *Handler) PostTracks(ctx context.Context, req *openapi.PostTracksReq) (openapi.PostTracksRes, error) {
@@ -44,6 +45,11 @@ func (h *Handler) PostTracks(ctx context.Context, req *openapi.PostTracksReq) (o
 	return &openapi.PostTracksCreated{}, nil
 }
 
-func (h *Handler) DeleteTrack(ctx context.Context, params openapi.DeleteTrackParams) error{
-	return h.tracksHandler.DeleteTrack(ctx, entity.Track{ID: params.ID})
+func (h *Handler) DeleteTrack(ctx context.Context, params openapi.DeleteTrackParams) (openapi.DeleteTrackRes, error) {
+	err := h.tracksHandler.DeleteTrack(ctx, entity.Track{ID: params.ID})
+	if err != nil {
+		return nil, err
+	}
+
+	return &openapi.DeleteTrackNoContent{}, nil
 }
