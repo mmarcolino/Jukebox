@@ -2,10 +2,12 @@ package postgres_test
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/marcolino/jukebox/gen/sqlc"
 	"github.com/marcolino/jukebox/internal/domain/entity"
 	"github.com/marcolino/jukebox/internal/resources/database/postgres"
 	"github.com/marcolino/jukebox/test"
@@ -13,6 +15,7 @@ import (
 )
 
 func TestGetTracks(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 
 	expectedTracks := []entity.Track{
@@ -34,9 +37,7 @@ func TestGetTracks(t *testing.T) {
 		},
 	}
 
-	columns := []string{"id", "title", "artist", "album", "duration", "genre"}
-
-	rowsData := [][]driver.Value{
+	successRowsData := [][]driver.Value{
 		{
 			"01JX3872K622GTRCCVXHXVP8ZY", "Next Semester", "Twenty One Pilots", "Clancy", int32(249), "Rock",
 		},
@@ -45,83 +46,162 @@ func TestGetTracks(t *testing.T) {
 		},
 	}
 
-	mock, db := test.NewMockDB(t)
+	columns := []string{"id", "title", "artist", "album", "duration", "genre"}
 
-	expectedRows := sqlmock.NewRows(columns)
+	for name, scenario := range map[string]struct {
+		expepectedRowsData [][]driver.Value
+		expectedData       []entity.Track
+		queryError         error
+		expectedError      error
+	}{
+		"success": {
+			expepectedRowsData: successRowsData,
+			expectedData:       expectedTracks,
+			queryError:         nil,
+			expectedError:      nil,
+		},
+		"not-found": {
+			expepectedRowsData: [][]driver.Value{},
+			expectedData:       nil,
+			queryError:         nil,
+			expectedError:      entity.ErrNotFound,
+		},
+		"generic-error": {
+			expepectedRowsData: [][]driver.Value{},
+			expectedData:       nil,
+			queryError:         entity.GenericErr,
+			expectedError:      entity.GenericErr,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			mock, db := test.NewMockDB(t)
+			expectedRows := sqlmock.NewRows(columns)
 
-	for _, row := range rowsData {
-		expectedRows.AddRow(row...)
+			for _, row := range scenario.expepectedRowsData {
+				expectedRows.AddRow(row...)
+			}
+
+			mock.ExpectQuery("-- name: GetTracks :many").WillReturnRows(expectedRows).WillReturnError(scenario.queryError)
+
+			postgresHandler := postgres.New(db)
+			tracks, err := postgresHandler.GetTracks(ctx)
+
+			assert.ErrorIs(t, err, scenario.expectedError)
+			assert.Equal(t, scenario.expectedData, tracks)
+		})
 	}
 
-	mock.ExpectQuery("-- name: GetTracks :many").WillReturnRows(expectedRows)
-
-	postgresHandler := postgres.New(db)
-
-	tracks, err := postgresHandler.GetTracks(ctx)
-
-	assert.NoError(t, err)
-	assert.Equal(t, expectedTracks, tracks)
 }
 
 func TestPostTrack(t *testing.T) {
 	ctx := context.Background()
 
-	data := entity.Track{
-		ID:       "01JX3872K622GTRCCVXHXVP8ZY",
-		Title:    "Next Semester",
-		Artist:   "Twenty One Pilots",
-		Album:    "Clancy",
-		Genre:    "Rock",
-		Duration: 249,
+	for name, scenario := range map[string]struct {
+		data          entity.Track
+		sqlcData      sqlc.PostTracksParams
+		queryError    error
+		expectedError error
+	}{
+		"success": {
+			data: entity.Track{
+				ID:       "01JX3872K622GTRCCVXHXVP8ZY",
+				Title:    "Next Semester",
+				Artist:   "Twenty One Pilots",
+				Album:    "Clancy",
+				Genre:    "Rock",
+				Duration: 249,
+			},
+			sqlcData: sqlc.PostTracksParams{
+				ID:       "01JX3872K622GTRCCVXHXVP8ZY",
+				Title:    "Next Semester",
+				Artist:   "Twenty One Pilots",
+				Album:    sql.NullString{String: "Clancy", Valid: true},
+				Genre:    sql.NullString{String: "Rock", Valid: true},
+				Duration: 249,
+			},
+			queryError:    nil,
+			expectedError: nil,
+		},
+		"generic-error": {
+			data:          entity.Track{},
+			sqlcData:      sqlc.PostTracksParams{},
+			queryError:    entity.GenericErr,
+			expectedError: entity.GenericErr,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			mock, db := test.NewMockDB(t)
+			mock.ExpectExec("^-- name: PostTracks :exec INSERT INTO public.tracks*").
+				WithArgs(sqlmock.AnyArg(), scenario.sqlcData.Title, scenario.sqlcData.Artist, sqlmock.AnyArg(), scenario.sqlcData.Duration, sqlmock.AnyArg()).
+				WillReturnResult(driver.ResultNoRows).WillReturnError(scenario.queryError)
+
+			postgresHandler := postgres.New(db)
+			err := postgresHandler.PostTrack(ctx, scenario.data)
+			assert.ErrorIs(t, err, scenario.expectedError)
+		})
 	}
-
-	mock, db := test.NewMockDB(t)
-	mock.ExpectExec("^-- name: PostTracks :exec INSERT INTO public.tracks*").
-		WithArgs(sqlmock.AnyArg(), data.Title, data.Artist, data.Album, data.Duration, data.Genre).
-		WillReturnResult(driver.ResultNoRows)
-
-	postgresHandler := postgres.New(db)
-
-	err := postgresHandler.PostTrack(ctx, data)
-	assert.NoError(t, err)
 
 }
 
-func TestDeleteTrack (t *testing.T) {
+func TestDeleteTrack(t *testing.T) {
 	ctx := context.Background()
 
 	columns := []string{"id", "title", "artist", "album", "duration", "genre"}
 
-	rowsData := [][]driver.Value{
+	successRowsData := [][]driver.Value{
 		{
 			"01JX3872K622GTRCCVXHXVP8ZY", "Next Semester", "Twenty One Pilots", "Clancy", int32(249), "Rock",
 		},
 	}
 
-	mock, db := test.NewMockDB(t)
+	for name, scenario := range map[string]struct {
+		rows          [][]driver.Value
+		data          entity.Track
+		queryError    error
+		expectedError error
+	}{
+		"sucess": {
+			rows: successRowsData,
+			data: entity.Track{
+				ID:       "01JX3872K622GTRCCVXHXVP8ZY",
+				Title:    "Next Semester",
+				Artist:   "Twenty One Pilots",
+				Album:    "Clancy",
+				Genre:    "Rock",
+				Duration: 249,
+			},
+			queryError:    nil,
+			expectedError: nil,
+		},
 
-	expectedRows := sqlmock.NewRows(columns)
+		"generic-error": {
+			rows:          [][]driver.Value{},
+			data:          entity.Track{},
+			queryError:    entity.GenericErr,
+			expectedError: entity.GenericErr,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
 
-	for _, row := range rowsData {
-		expectedRows.AddRow(row...)
+			mock, db := test.NewMockDB(t)
+
+			expectedRows := sqlmock.NewRows(columns)
+
+			for _, row := range scenario.rows {
+				expectedRows.AddRow(row...)
+			}
+
+			mock.ExpectExec("^-- name: DeleteTrack :exec DELETE FROM public.tracks*").
+				WithArgs(scenario.data.ID).
+				WillReturnResult(driver.ResultNoRows).
+				WillReturnError(scenario.queryError)
+
+			postgresHandler := postgres.New(db)
+
+			err := postgresHandler.DeleteTrack(ctx, scenario.data)
+			assert.ErrorIs(t, err, scenario.expectedError)
+		})
 	}
-
-	data := entity.Track{
-		ID:       "01JX3872K622GTRCCVXHXVP8ZY",
-		Title:    "Next Semester",
-		Artist:   "Twenty One Pilots",
-		Album:    "Clancy",
-		Genre:    "Rock",
-		Duration: 249,
-	}
-
-	mock.ExpectExec("^-- name: DeleteTrack :exec DELETE FROM public.tracks*").
-		WithArgs(data.ID).
-		WillReturnResult(driver.ResultNoRows)
-	
-	postgresHandler := postgres.New(db)
-
-	err := postgresHandler.DeleteTrack(ctx, data)
-	assert.NoError(t, err)
 
 }

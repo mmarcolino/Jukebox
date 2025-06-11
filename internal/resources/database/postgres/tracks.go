@@ -15,6 +15,10 @@ func (h *PostgresHandler) GetTracks(ctx context.Context) ([]entity.Track, error)
 		return nil, err
 	}
 
+	if len(persistedTracks) <= 0 {
+		return nil, entity.ErrNotFound
+	}
+
 	var tracks []entity.Track = make([]entity.Track, len(persistedTracks))
 
 	for i, track := range persistedTracks {
@@ -42,6 +46,6 @@ func (h *PostgresHandler) PostTrack(ctx context.Context, track entity.Track) err
 	})
 }
 
-func (h *PostgresHandler) DeleteTrack(ctx context.Context, track entity.Track) error{
+func (h *PostgresHandler) DeleteTrack(ctx context.Context, track entity.Track) error {
 	return h.queries.DeleteTrack(ctx, track.ID)
 }
