@@ -49,3 +49,14 @@ func (h *PostgresHandler) PostTrack(ctx context.Context, track entity.Track) err
 func (h *PostgresHandler) DeleteTrack(ctx context.Context, track entity.Track) error {
 	return h.queries.DeleteTrack(ctx, track.ID)
 }
+
+func (h *PostgresHandler) UpdateTrack (ctx context.Context, track entity.Track) error {
+	return h.queries.UpdateTrack(ctx, sqlc.UpdateTrackParams{
+		ID: track.ID,
+		Title: track.Title,
+		Artist: track.Artist,
+		Duration: int32(track.Duration),
+		Album: utils.ToNullString(track.Album),
+		Genre: utils.ToNullString(track.Genre),
+	})
+}

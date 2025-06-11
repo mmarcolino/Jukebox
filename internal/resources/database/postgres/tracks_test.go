@@ -205,3 +205,78 @@ func TestDeleteTrack(t *testing.T) {
 	}
 
 }
+
+func TestUpdateTrack(t *testing.T){
+	ctx := context.Background()
+
+	columns := []string{"id", "title", "artist", "album", "duration", "genre"}
+
+	successRowsData := [][]driver.Value{
+		{
+			"01JX3872K622GTRCCVXHXVP8ZY", "Next Semester", "Twenty One Pilots", "Clancy", int32(249), "Rock",
+		},
+	}
+	for name, scenario := range map[string]struct {
+		rows          [][]driver.Value
+		sqlcData      sqlc.UpdateTrackParams
+		queryError    error
+		expectedError error
+	}{
+		"sucess": {
+			rows: successRowsData,
+			sqlcData: sqlc.UpdateTrackParams{
+				ID:       "01JX3872K622GTRCCVXHXVP8ZY",
+				Title:    "Backslide",
+				Artist:   "Twenty One Pilots",
+				Album:    sql.NullString{String: "Clancy", Valid: true},
+				Genre:    sql.NullString{String: "Rap rock", Valid: true},
+				Duration: 205,
+			},
+			queryError:    nil,
+			expectedError: nil,
+		},
+
+		"generic-error": {
+			rows:          [][]driver.Value{},
+			sqlcData:      sqlc.UpdateTrackParams{},
+			queryError:    entity.GenericErr,
+			expectedError: entity.GenericErr,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+
+			mock, db := test.NewMockDB(t)
+
+			expectedRows := sqlmock.NewRows(columns)
+
+			for _, row := range scenario.rows {
+				expectedRows.AddRow(row...)
+			}
+
+			mock.ExpectExec("^-- name: UpdateTrack :exec UPDATE public.tracks*").
+				WithArgs(scenario.sqlcData.ID,
+					scenario.sqlcData.Title,
+					scenario.sqlcData.Artist,
+					scenario.sqlcData.Album,
+					scenario.sqlcData.Duration,
+					scenario.sqlcData.Genre,
+				).
+				WillReturnResult(driver.ResultNoRows).
+				WillReturnError(scenario.queryError)
+
+			postgresHandler := postgres.New(db)
+			
+			track := entity.Track{
+				ID:       scenario.sqlcData.ID,
+				Title:    scenario.sqlcData.Title,
+				Artist:   scenario.sqlcData.Artist,
+				Duration: int(scenario.sqlcData.Duration),
+				Album:    scenario.sqlcData.Album.String,
+				Genre:    scenario.sqlcData.Genre.String,
+
+			}
+			err := postgresHandler.UpdateTrack(ctx, track)
+			assert.ErrorIs(t, err, scenario.expectedError)
+		})
+	}
+}
