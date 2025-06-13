@@ -53,3 +53,20 @@ func (h *Handler) DeleteTrack(ctx context.Context, params openapi.DeleteTrackPar
 
 	return &openapi.DeleteTrackNoContent{}, nil
 }
+
+func (h *Handler) UpdateTrack(ctx context.Context, req *openapi.UpdateTrackReq, params openapi.UpdateTrackParams) (openapi.UpdateTrackRes, error){
+	err := h.tracksHandler.UpdateTrack(ctx, entity.Track{
+		ID: params.ID,
+		Title:    req.Title,
+		Artist:   req.Artist,
+		Album:    utils.FromOptString(req.Album),
+		Genre:    utils.FromOptString(req.Genre),
+		Duration: req.Duration,
+	})
+
+	if err != nil{
+		return nil, err
+	}
+
+	return &openapi.UpdateTrackNoContent{}, nil
+}

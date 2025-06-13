@@ -52,25 +52,40 @@ paths:
         '201':
           description: Created
   /tracks/{id}:
-      parameters:
-          - in: path
-            name: id
-            schema:
-              type: string
-            required: true
-            description: Track Ulid ID
-      delete:
-        summary: Delete track with specific ID
-        operationId: DeleteTrack
-        responses:
-          default:
-            description: Unexpected error
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/ErrorResponseOgen"
-          '204': 
-            description: No Content         
+    parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Track Ulid ID
+    delete:
+      summary: Delete track with specific ID
+      operationId: DeleteTrack
+      responses:
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseOgen"
+        '204': 
+          description: No Content
+    patch:
+      summary: Update track with specific ID
+      operationId: UpdateTrack
+      requestBody: 
+        $ref: "#/components/requestBodies/TrackInput"
+      responses:
+        '204': 
+          description: No Content
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseOgen"
+            
 components:
   schemas:
     Track:
