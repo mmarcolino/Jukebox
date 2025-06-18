@@ -54,7 +54,7 @@ func TestGetTracks(t *testing.T) {
 	mockTracksHandler := mocks.NewMockTracks(t)
 	mockTracksHandler.On("GetTracks", ctx).Return(tracksResponse, nil)
 
-	handler := api.NewHandler(mockTracksHandler)
+	handler := api.NewHandler(mockTracksHandler, mocks.NewMockPlaylists(t))
 
 	tracks, err := handler.GetTracks(ctx)
 	assert.NoError(t, err)
@@ -86,7 +86,7 @@ func TestPostTrack(t *testing.T) {
 	mockTracksHandler := mocks.NewMockTracks(t)
 	mockTracksHandler.On("PostTrack", ctx, expectedTrack).Return(nil)
 
-	handler := api.NewHandler(mockTracksHandler)
+	handler := api.NewHandler(mockTracksHandler, mocks.NewMockPlaylists(t))
 
 	res, err := handler.PostTracks(ctx, req)
 	assert.NoError(t, err)
