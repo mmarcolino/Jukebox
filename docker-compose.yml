@@ -28,5 +28,6 @@ services:
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
     volumes:
-      - "./.localstack:/tmp/localstack"
+      - "./tools/localstack/data:/var/lib/localstack/data"
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./tools/localstack/initaws:/docker-entrypoint-initaws.d"
