@@ -12,6 +12,7 @@ type PostgresHandler struct {
 }
 
 var _ gateway.Tracks = (*PostgresHandler)(nil)
+var _ gateway.Playlists = (*PostgresHandler)(nil)
 
 func New(db *sqlx.DB) *PostgresHandler {
 	return &PostgresHandler{db: db, queries: sqlc.New(db)}

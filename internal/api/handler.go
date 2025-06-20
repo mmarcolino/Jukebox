@@ -9,11 +9,12 @@ import (
 )
 
 type Handler struct {
-	tracksHandler gateway.Tracks
+	tracksHandler    gateway.Tracks
+	playlistsHandler gateway.Playlists
 }
 
-func NewHandler(module gateway.Tracks) *Handler {
-	return &Handler{tracksHandler: module}
+func NewHandler(tracks gateway.Tracks, playlists gateway.Playlists) *Handler {
+	return &Handler{tracksHandler: tracks, playlistsHandler: playlists}
 }
 
 func (h *Handler) NewError(ctx context.Context, err error) *openapi.ErrorResponseOgenStatusCode {

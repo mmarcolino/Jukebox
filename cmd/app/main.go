@@ -29,8 +29,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	moduleHandler := postgres.New(db)
-	handler := api.NewHandler(moduleHandler)
+	postgresHandler := postgres.New(db)
+	handler := api.NewHandler(postgresHandler, postgresHandler)
 
 	server, err := openapi.NewServer(handler)
 	if err != nil {
