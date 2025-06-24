@@ -43,7 +43,6 @@ func main() {
 			}),
 		),
 	)
-
 	if err != nil {
 		log.Fatalf("error while creating aws config: %v", err)
 	}

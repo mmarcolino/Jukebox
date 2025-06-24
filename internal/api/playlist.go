@@ -39,3 +39,24 @@ func (h *Handler) PostPlaylist(ctx context.Context, req *openapi.PostPlaylistReq
 
 	return &openapi.PostPlaylistCreated{}, nil
 }
+
+func (h *Handler) ExecutePlaylist(ctx context.Context, params openapi.ExecutePlaylistParams) (openapi.ExecutePlaylistRes, error) {
+	playlist, err := h.playlistsHandler.GetPlaylistFromID(ctx, params.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	tracks, err := h.tracksHandler.GetTracksFromPlaylist(ctx, playlist.Tracks)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, track := range tracks {
+		err = h.queueClient.AddTrackToQueue(ctx, track)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &openapi.ExecutePlaylistOK{}, nil
+}

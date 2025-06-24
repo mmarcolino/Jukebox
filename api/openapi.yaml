@@ -122,6 +122,29 @@ paths:
         '201':
           description: Created
 
+  /playlist/execute/{id}:
+    parameters:
+    - in: path
+      name: id
+      schema:
+        type: string
+      required: true
+      description: Track Ulid ID
+
+    post:
+      summary: Execute a playlist on worker
+      operationId: ExecutePlaylist
+      responses:
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponseOgen"
+        '200':
+          description: OK
+
+
 components:
   schemas:
     Track:

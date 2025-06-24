@@ -37,3 +37,17 @@ func (p *PostgresHandler) CreatePlaylist(ctx context.Context, playlist entity.Pl
 		Tracks: playlist.Tracks,
 	})
 }
+
+func (p *PostgresHandler) GetPlaylistFromID(ctx context.Context, id string) (entity.Playlist, error) {
+	persistedPlaylist, err := p.queries.GetPlaylistFromID(ctx, id)
+	if err != nil {
+		return entity.Playlist{}, err
+	}
+
+	return entity.Playlist{
+		ID:     persistedPlaylist.ID,
+		Name:   persistedPlaylist.Name,
+		Tracks: persistedPlaylist.Tracks,
+	}, err
+
+}
