@@ -13,7 +13,7 @@ func ToOptString(s string) openapi.OptString {
 	return openapi.NewOptString(s)
 }
 
-func FromOptString(o openapi.OptString) string{
+func FromOptString(o openapi.OptString) string {
 	if o.IsSet() {
 		return o.Value
 	}
@@ -28,9 +28,24 @@ func FromNullStr(ns sql.NullString) string {
 	return ""
 }
 
-func ToNullString (s string) sql.NullString{
-	if s == ""{
+func ToNullString(s string) sql.NullString {
+	if s == "" {
 		return sql.NullString{}
 	}
 	return sql.NullString{Valid: true, String: s}
+}
+
+func PointerToString(p *string) string {
+	if p == nil {
+		return ""
+	}
+
+	return *p
+}
+
+func StringToPointer(s string) *string{
+	if s == ""{
+		return nil
+	}
+	return &s
 }

@@ -11,4 +11,5 @@ type Tracks interface {
 	PostTrack(context.Context, entity.Track) error
 	DeleteTrack(context.Context, entity.Track) error
 	UpdateTrack(context.Context, entity.Track) error
+	GetTracksFromPlaylist(ctx context.Context, tracksIDs []string) ([]entity.Track, error)
 }

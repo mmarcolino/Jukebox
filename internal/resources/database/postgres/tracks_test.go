@@ -47,7 +47,7 @@ func TestGetTracks(t *testing.T) {
 	}
 
 	columns := []string{"id", "title", "artist", "album", "duration", "genre"}
-
+	
 	for name, scenario := range map[string]struct {
 		expepectedRowsData [][]driver.Value
 		expectedData       []entity.Track
