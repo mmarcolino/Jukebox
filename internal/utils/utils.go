@@ -42,3 +42,10 @@ func PointerToString(p *string) string {
 
 	return *p
 }
+
+func StringToPointer(s string) *string{
+	if s == ""{
+		return nil
+	}
+	return &s
+}
