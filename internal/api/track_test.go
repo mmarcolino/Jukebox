@@ -17,7 +17,6 @@ func TestGetTracks(t *testing.T) {
 
 	tracksResponse := []entity.Track{
 		{
-			ID:       "01JX3872K622GTRCCVXHXVP8ZY",
 			Title:    "Next Semester",
 			Artist:   "Twenty One Pilots",
 			Album:    "Clancy",
@@ -25,7 +24,6 @@ func TestGetTracks(t *testing.T) {
 			Duration: 249,
 		},
 		{
-			ID:       "01JX38A0KPBN0RTDEWRMYFN0K2",
 			Title:    "todo dia",
 			Artist:   "terraplana",
 			Album:    "natural",
@@ -34,7 +32,7 @@ func TestGetTracks(t *testing.T) {
 		},
 	}
 
-	expectedTracks := []openapi.Track{
+	var expectedTracks openapi.GetTracksOKApplicationJSON = []openapi.Track{
 		{
 			Title:    "Next Semester",
 			Artist:   "Twenty One Pilots",
@@ -54,12 +52,12 @@ func TestGetTracks(t *testing.T) {
 	mockTracksHandler := mocks.NewMockTracks(t)
 	mockTracksHandler.On("GetTracks", ctx).Return(tracksResponse, nil)
 
-	handler := api.NewHandler(mockTracksHandler, mocks.NewMockPlaylists(t))
+	queue := mocks.NewMockQueue(t)
+	handler := api.NewHandler(mockTracksHandler, mocks.NewMockPlaylists(t), queue)
 
 	tracks, err := handler.GetTracks(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedTracks, tracks)
-
+	assert.Equal(t, &expectedTracks, tracks)
 }
 
 func TestPostTrack(t *testing.T) {
@@ -86,7 +84,8 @@ func TestPostTrack(t *testing.T) {
 	mockTracksHandler := mocks.NewMockTracks(t)
 	mockTracksHandler.On("PostTrack", ctx, expectedTrack).Return(nil)
 
-	handler := api.NewHandler(mockTracksHandler, mocks.NewMockPlaylists(t))
+	queue := mocks.NewMockQueue(t)
+	handler := api.NewHandler(mockTracksHandler, mocks.NewMockPlaylists(t), queue)
 
 	res, err := handler.PostTracks(ctx, req)
 	assert.NoError(t, err)
