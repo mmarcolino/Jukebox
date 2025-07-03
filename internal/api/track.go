@@ -5,6 +5,7 @@ import (
 
 	"github.com/marcolino/jukebox/gen/openapi"
 	"github.com/marcolino/jukebox/internal/domain/entity"
+	"github.com/marcolino/jukebox/internal/metrics"
 	"github.com/marcolino/jukebox/internal/utils"
 )
 
@@ -42,6 +43,7 @@ func (h *Handler) PostTracks(ctx context.Context, req *openapi.PostTracksReq) (o
 	if err != nil {
 		return nil, err
 	}
+	metrics.TracksCreated.Inc()
 	return &openapi.PostTracksCreated{}, nil
 }
 

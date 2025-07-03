@@ -16,8 +16,10 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/marcolino/jukebox/gen/openapi"
 	"github.com/marcolino/jukebox/internal/api"
+	"github.com/marcolino/jukebox/internal/metrics"
 	"github.com/marcolino/jukebox/internal/resources/database/postgres"
 	"github.com/marcolino/jukebox/internal/resources/queue"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -71,6 +73,7 @@ func main() {
 	client := sqs.NewFromConfig(cfg)
 	queueClient := queue.NewSQS(client, queueUrl, awsRegion, int32(sqsWaitTime), int32(maxMessages))
 
+
 	postgresHandler := postgres.New(db)
 	handler := api.NewHandler(postgresHandler, postgresHandler, queueClient)
 
@@ -78,6 +81,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	metrics.Register()
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":2112", nil)
+	}()
 
 	if err = http.ListenAndServe(":9090", server); err != nil {
 		log.Fatal(err)

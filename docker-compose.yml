@@ -15,7 +15,6 @@ services:
       - POSTGRES_DB=blabla
       - PGDATA=/var/lib/postgresql/data/pgdata
 
-
   localstack:
     container_name: localstack
     command: /bin/bash /docker-entrypoint-initaws.d/sqs-queue.sh
@@ -31,3 +30,36 @@ services:
       - "./tools/localstack/data:/var/lib/localstack/data"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./tools/localstack/initaws:/docker-entrypoint-initaws.d"
+    
+  victoriametrics:
+    image: victoriametrics/victoria-metrics
+    container_name: victoriametrics
+    ports:
+      - "8428:8428"
+    command:
+      - "--retentionPeriod=1"
+    volumes:
+      - victoriametrics-data:/victoria-metrics-data
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./tools/prometheus/prometheus.yml:/var/lib/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+volumes:
+  victoriametrics-data:
+  grafana-data:
