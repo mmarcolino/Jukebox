@@ -68,7 +68,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = scheduler.NewJob(gocron.DurationJob(3*time.Second), gocron.NewTask(func ()  {
+	_, err = scheduler.NewJob(gocron.DurationJob(3*time.Minute), gocron.NewTask(func ()  {
 		err := worker.Run(ctx)
 		if err != nil{
 			log.Printf("error while executing worker: %v", err)
