@@ -7,8 +7,11 @@ import (
 	"github.com/marcolino/jukebox/gen/openapi"
 	"github.com/marcolino/jukebox/internal/api"
 	"github.com/marcolino/jukebox/internal/domain/entity"
+	"github.com/marcolino/jukebox/internal/metrics"
 	"github.com/marcolino/jukebox/internal/utils"
 	"github.com/marcolino/jukebox/test/mocks"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,6 +66,8 @@ func TestGetTracks(t *testing.T) {
 func TestPostTrack(t *testing.T) {
 	ctx := context.Background()
 
+	prometheus.MustRegister(metrics.TracksCreated)
+
 	req := &openapi.PostTracksReq{
 		Title:    "Next Semester",
 		Artist:   "Twenty One Pilots",
@@ -90,4 +95,6 @@ func TestPostTrack(t *testing.T) {
 	res, err := handler.PostTracks(ctx, req)
 	assert.NoError(t, err)
 	assert.Equal(t, successRes, res)
+
+	assert.Equal(t, 1, testutil.CollectAndCount(metrics.TracksCreated))
 }
