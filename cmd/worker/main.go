@@ -3,15 +3,20 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/go-co-op/gocron/v2"
 	"github.com/marcolino/jukebox/internal/domain/service"
+	"github.com/marcolino/jukebox/internal/metrics"
 	"github.com/marcolino/jukebox/internal/resources/queue"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -50,10 +55,30 @@ func main() {
 	client := sqs.NewFromConfig(cfg)
 	queueClient := queue.NewSQS(client, queueUrl, awsRegion, int32(sqsWaitTime), int32(maxMessages))
 
+	metrics.Register()
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":2113", nil)
+	}()
 	worker := service.NewWorker(queueClient)
-	err = worker.Run(ctx)
-
+	
+	scheduler, err := gocron.NewScheduler()
+	
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = scheduler.NewJob(gocron.DurationJob(3*time.Minute), gocron.NewTask(func ()  {
+		err := worker.Run(ctx)
+		if err != nil{
+			log.Printf("error while executing worker: %v", err)
+		}
+	}))
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scheduler.Start()
+	select{}
 }

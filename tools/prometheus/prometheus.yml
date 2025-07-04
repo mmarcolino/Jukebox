@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+      
+  - job_name: 'jukebox'
+    static_configs:
+     # - targets: ['localhost:2112', 'localhost:2113']
+    - targets: ['host.docker.internal:2112', 'host.docker.internal:2113']
+
+# remote_write:
+#   - url: "http://victoriametrics:8428/api/v1/write"
